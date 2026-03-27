@@ -43,6 +43,10 @@ app.get('/', (req, res) => {
   res.send('✅ API en ligne. Routes : /stormglass et /tides');
 });
 
+app.get("/display", (req, res) => {
+  res.sendFile("tides_display.html", { root: "." });
+});
+
 app.listen(PORT, () => {
   console.log(`✅ API running on http://localhost:${PORT}`);
 });

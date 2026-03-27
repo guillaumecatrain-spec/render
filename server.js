@@ -5,7 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SG_KEY = process.env.STORMGLASS_KEY;
 
-app.get('/stormglass', async (req, res) => {
+app.get("/stormglass", async (req, res) => {
   if (!SG_KEY) {
     return res.status(500).json({ error: 'Missing STORMGLASS_KEY' });
   }
@@ -28,7 +28,7 @@ app.get('/stormglass', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send('✅ Serveur en ligne. Essayez /stormglass');
 });
 

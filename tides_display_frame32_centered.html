@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang='fr'>
+<head>
+<meta charset='UTF-8'>
+<title>Affichage dynamique – Frame 32 (Centré, sans coef)</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #0a0f1d; color: white;
+    font-family: Arial, sans-serif;
+    width: 1920px; height: 1080px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: 90%;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  h1 {
+    font-size: 55px; text-align: center; font-weight: 300;
+  }
+  #clock {
+    text-align:center; font-size:34px; opacity:.9;
+  }
+
+  .panel {
+    background:#1c253d;
+    padding:20px;
+    border-radius:16px;
+    text-align:center;
+  }
+  .title { font-size:38px; margin-bottom:5px; }
+  .value-big { font-size:50px; font-weight:bold; }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size:34px;
+    text-align:center;
+  }
+  th {
+    background:#1c253d; padding:18px; font-size:32px;
+  }
+  td {
+    padding:18px; border-bottom:2px solid #2d3752;
+  }
+  tr:nth-child(even){ background:#141b2e; }
+  .high { color:#4cd964; font-weight:bold; }
+  .low { color:#ff3b30; font-weight:bold; }
+</style>
+</head>
+<body>
+<div class='container'>
+  <div>
+    <h1>🌊 Marées & Météo Marine – Trébeurden</h1>
+    <div id='clock'>--:--:--</div>
+  </div>
+
+  <div class='panel'>
+    <div class='title'>🌬 Vent actuel</div>
+    <div id='wind' class='value-big'>Chargement…</div>
+  </div>
+
+  <div class='panel'>
+    <div class='title'>🌕 Prochaine marée</div>
+    <div id='nextTide' class='value-big'>Chargement…</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Heure</th><th>Type</th></tr>
+    </thead>
+    <tbody id='tideTable'></tbody>
+  </table>
+</div>
+
+<script>
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleTimeString('fr-FR',{hour12:false});
+}
+setInterval(updateClock,1000); updateClock();
+
+async function loadWind(){
+  try{
+    const r=await fetch('https://render-3d8u.onrender.com/stormglass');
+    const j=await r.json();
+    const h=j.hours[0];
+    document.getElementById('wind').innerHTML=`${h.windSpeed.sg} m/s – ${h.windDirection.sg}°`;
+  }catch(e){ document.getElementById('wind').textContent='Erreur vent'; }
+}
+
+async function loadTides(){
+  try{
+    const r=await fetch('https://render-3d8u.onrender.com/tides');
+    const j=await r.json();
+
+    const tides=j.extremes.map(t=>({ type:t.type, date:new Date(t.date) }))
+                         .sort((a,b)=>a.date-b.date);
+
+    const now=new Date();
+    const next=tides.find(t=>t.date>now);
+    if(next){
+      const lbl=next.type==='High'?'Haute mer':'Basse mer';
+      const h=next.date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('nextTide').innerHTML=`${lbl} à ${h}`;
+    }
+
+    const tbody=document.getElementById('tideTable');
+    tbody.innerHTML='';
+
+    tides.forEach(t=>{
+      const hr=t.date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      const lbl=t.type==='High'?'Haute mer':'Basse mer';
+      const cls=t.type==='High'?'high':'low';
+      tbody.innerHTML+=`<tr><td>${hr}</td><td class='${cls}'>${lbl}</td></tr>`;
+    });
+
+  }catch(e){ document.getElementById('nextTide').innerText='Erreur marées'; }
+}
+
+loadWind();
+loadTides();
+setInterval(()=>{loadWind();loadTides();},10*60*1000);
+</script>
+
+</body>
+</html>

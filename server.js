@@ -63,7 +63,7 @@ app.get('/tides', async (req, res) => {
 
 // ✅ Page d'affichage Frame 32
 app.get('/display', (req, res) => {
-  res.sendFile('tides_display_frame32_centered.html', { root: '.' });
+  res.sendFile('tides_display_frame32_centered_4tides.html', { root: '.' });
 });
 
 app.get('/', (req, res) => {
